@@ -20,7 +20,7 @@
         </p>
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="hero-btn">Create free account</a>
-            <a href="#" class="hero-btn">See how it works</a>
+            <a href="#" class="hero-btn" id="video-open" role="button">See how it works</a>
         </div>
     </div>
 
@@ -102,4 +102,69 @@
     </div>
 </section>
 
+<!-- "See how it works" video modal -->
+<div class="modal-overlay" id="video-modal" role="dialog" aria-modal="true"
+     aria-labelledby="video-modal-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-head">
+            <h2 class="modal-title" id="video-modal-title">How Spendly works</h2>
+            <button type="button" class="modal-close" id="video-close"
+                    aria-label="Close video">&times;</button>
+        </div>
+        <div class="modal-video">
+            <!-- Placeholder video — swap this URL for the real one. -->
+            <iframe id="video-frame"
+                    data-src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ"
+                    title="How Spendly works"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var openBtn = document.getElementById("video-open");
+    var modal   = document.getElementById("video-modal");
+    var closeBtn = document.getElementById("video-close");
+    var frame   = document.getElementById("video-frame");
+
+    if (!openBtn || !modal || !frame) return;
+
+    function openModal(e) {
+        if (e) e.preventDefault();
+        // Set src only on open, so YouTube is never loaded on page view.
+        frame.src = frame.dataset.src + "?autoplay=1&rel=0";
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        closeBtn.focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+        // Removing src tears down the player, which stops audio immediately.
+        frame.removeAttribute("src");
+        openBtn.focus();
+    }
+
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+
+    // Click on the backdrop (but not inside the dialog) closes.
+    modal.addEventListener("click", function (e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+})();
+</script>
 {% endblock %}
