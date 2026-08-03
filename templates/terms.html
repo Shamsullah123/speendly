@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="legal-section">
+    <div class="legal-container">
+
+        <div class="legal-header">
+            <div class="legal-badge">Legal</div>
+            <h1 class="legal-title">Terms and <em>Conditions</em></h1>
+            <p class="legal-updated">Last updated: 3 August 2026</p>
+        </div>
+
+        <div class="legal-card">
+
+        <p class="legal-intro">
+            These Terms and Conditions govern your use of Spendly, a personal
+            expense tracking application. Please read them carefully before
+            creating an account or logging any expenses.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">1.</span>Acceptance of Terms</h2>
+        <p class="legal-body">
+            By creating a Spendly account or otherwise using the service, you
+            agree to be bound by these Terms. If you do not agree with any part
+            of these Terms, you should not use Spendly.
+        </p>
+        <p class="legal-body">
+            You must be at least 18 years old, or the age of majority in your
+            jurisdiction, to use this service. By using Spendly you confirm that
+            you meet this requirement and that the information you provide
+            during registration is accurate.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">2.</span>Use of Service</h2>
+        <p class="legal-body">
+            Spendly is provided for personal, non-commercial use. You may use it
+            to record, categorise, and review your own expenses. You are
+            responsible for maintaining the confidentiality of your account
+            credentials and for all activity that occurs under your account.
+        </p>
+        <p class="legal-body">You agree not to:</p>
+        <ul class="legal-list">
+            <li>Use the service for any unlawful purpose or in violation of any applicable regulation.</li>
+            <li>Attempt to gain unauthorised access to another user's account or data.</li>
+            <li>Interfere with, disrupt, or place undue load on the service or its infrastructure.</li>
+            <li>Copy, resell, or redistribute any part of the service without written permission.</li>
+        </ul>
+        <p class="legal-body">
+            We reserve the right to suspend or terminate accounts that violate
+            these Terms, with or without prior notice.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">3.</span>User Data</h2>
+        <p class="legal-body">
+            The expense records, categories, and account details you enter
+            remain yours. We store this data solely to provide the service to
+            you — to display your transactions, generate summaries, and let you
+            filter by date or category.
+        </p>
+        <p class="legal-body">
+            We do not sell your personal or financial data to third parties.
+            Passwords are stored in hashed form and are never readable by us in
+            plain text. While we take reasonable measures to protect your
+            information, no method of transmission or storage is completely
+            secure, and we cannot guarantee absolute security.
+        </p>
+        <p class="legal-body">
+            You may delete your expense records at any time from within the
+            application. Deleting your account removes your associated records
+            from our active systems, though copies may persist in backups for a
+            limited period. For more detail on how information is handled, see
+            our <a href="#" class="legal-link">Privacy Policy</a>.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">4.</span>Limitations of Liability</h2>
+        <p class="legal-body">
+            Spendly is a record-keeping tool, not a financial, tax, accounting,
+            or investment advisory service. Any summaries, totals, or category
+            breakdowns it produces are informational only and should not be
+            relied upon for tax filing, legal compliance, or financial planning
+            decisions. You are responsible for verifying the accuracy of the
+            data you enter.
+        </p>
+        <p class="legal-body">
+            The service is provided "as is" and "as available", without
+            warranties of any kind, whether express or implied. We do not
+            warrant that the service will be uninterrupted, error-free, or that
+            any data loss will not occur.
+        </p>
+        <p class="legal-body">
+            To the fullest extent permitted by law, Spendly and its operators
+            shall not be liable for any indirect, incidental, special, or
+            consequential damages arising out of your use of, or inability to
+            use, the service — including loss of data, loss of profits, or
+            financial decisions made on the basis of information displayed in
+            the application.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">5.</span>Changes to Terms</h2>
+        <p class="legal-body">
+            We may revise these Terms from time to time to reflect changes in
+            the service or in applicable law. When we do, we will update the
+            "Last updated" date shown at the top of this page.
+        </p>
+        <p class="legal-body">
+            Material changes will be communicated through the application or by
+            email where appropriate. Your continued use of Spendly after revised
+            Terms take effect constitutes acceptance of those changes. If you do
+            not agree with the updated Terms, you should stop using the service
+            and may delete your account.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">6.</span>Contact</h2>
+        <p class="legal-body">
+            If you have questions about these Terms, please reach out through
+            the contact details provided within the application.
+        </p>
+
+        </div>
+
+        <p class="legal-footnote">
+            Ready to start tracking?
+            <a href="{{ url_for('register') }}">Create a free account</a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}
