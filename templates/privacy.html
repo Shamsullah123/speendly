@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="legal-section">
+    <div class="legal-container">
+
+        <div class="legal-header">
+            <div class="legal-badge">Legal</div>
+            <h1 class="legal-title">Privacy <em>Policy</em></h1>
+            <p class="legal-updated">Last updated: 3 August 2026</p>
+        </div>
+
+        <div class="legal-card">
+
+        <p class="legal-intro">
+            Spendly exists to help you understand your own spending — not to
+            build a profile of you for anyone else. This policy explains what
+            information we collect, why we collect it, and what we do with it.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">1.</span>Data We Collect</h2>
+        <p class="legal-body">
+            We collect only what the service needs in order to function. This
+            falls into three groups:
+        </p>
+        <ul class="legal-list">
+            <li><strong>Account details</strong> — your name, email address, and a hashed version of your password, provided when you register.</li>
+            <li><strong>Expense records</strong> — the amount, category, date, and description of each expense you choose to log.</li>
+            <li><strong>Basic technical data</strong> — a session cookie to keep you signed in, and standard server logs such as request times and error traces.</li>
+        </ul>
+        <p class="legal-body">
+            We do not connect to your bank, ask for card or account numbers, or
+            import transactions automatically. Every expense in Spendly is there
+            because you entered it yourself.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">2.</span>How We Use Your Data</h2>
+        <p class="legal-body">
+            Your data is used to operate the service you signed up for — nothing
+            more. Specifically, we use it to:
+        </p>
+        <ul class="legal-list">
+            <li>Authenticate you and keep your session active.</li>
+            <li>Display your expenses, category breakdowns, and monthly summaries.</li>
+            <li>Apply the date and category filters you select.</li>
+            <li>Diagnose errors and keep the application running reliably.</li>
+        </ul>
+        <p class="legal-body">
+            We do not sell, rent, or trade your personal or financial
+            information. We do not use your expense data for advertising, and we
+            do not share it with third parties for marketing purposes.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">3.</span>Data Storage</h2>
+        <p class="legal-body">
+            Your account and expense records are stored in the application's
+            database. Passwords are never stored in plain text — they are hashed
+            before being saved, so they cannot be read back by us or by anyone
+            with access to the database.
+        </p>
+        <p class="legal-body">
+            Your records are kept for as long as your account is active. You may
+            delete individual expenses at any time from within the application,
+            and deleting your account removes your associated records from our
+            active systems. Copies may persist in routine backups for a limited
+            period before being overwritten.
+        </p>
+        <p class="legal-body">
+            We take reasonable technical measures to protect your information,
+            but no method of transmission or storage is completely secure, and we
+            cannot guarantee absolute security.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">4.</span>Third Party Services</h2>
+        <p class="legal-body">
+            Spendly is built to keep external dependencies to a minimum. The
+            application currently loads its typefaces from Google Fonts, which
+            means your browser makes a request to Google's servers when a page
+            renders. That request may expose your IP address and browser details
+            to Google under their own privacy terms.
+        </p>
+        <p class="legal-body">
+            We do not use analytics trackers, advertising pixels, or social media
+            embeds. Your expense records are never transmitted to any third
+            party service.
+        </p>
+        <p class="legal-body">
+            If we introduce additional third party services in future — such as
+            hosting, email delivery, or error monitoring — we will update this
+            section to name them and describe what they receive.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">5.</span>Your Rights</h2>
+        <p class="legal-body">
+            You can view and correct your account details from your profile, and
+            you can export or delete your expense records at any time. If you
+            would like a copy of the data associated with your account, or want
+            it erased entirely, contact us using the details below.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">6.</span>Changes to This Policy</h2>
+        <p class="legal-body">
+            We may update this policy to reflect changes in the service or in
+            applicable law. When we do, the "Last updated" date at the top of
+            this page will change. Material changes will be communicated through
+            the application or by email where appropriate.
+        </p>
+
+        <h2 class="legal-heading"><span class="legal-num">7.</span>Contact Us</h2>
+        <p class="legal-body">
+            If you have questions about this policy, about what data we hold, or
+            about a request to access or delete it, please reach out through the
+            contact details provided within the application. Your use of Spendly
+            is also governed by our
+            <a href="{{ url_for('terms') }}" class="legal-link">Terms and Conditions</a>.
+        </p>
+
+        </div>
+
+        <p class="legal-footnote">
+            Ready to start tracking?
+            <a href="{{ url_for('register') }}">Create a free account</a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}
