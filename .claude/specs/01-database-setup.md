@@ -1,3 +1,5 @@
+# Spec Document
+
 ## 1. Overview
 
 Replace the stub in `database/db.py` with a working SQLite implementation.
@@ -79,7 +81,7 @@ Nothing — this is the first step.
     - If yes → return early (no duplication)
 - Inserts one demo user:
     - name: Demo User
-    - email: [demo@spendly.com](mailto:demo@spendly.com)
+    - email: demo@spendly.com
     - password: demo123 (hashed using `werkzeug`)
 - Inserts **8 sample expenses**:
     - All linked to demo user
