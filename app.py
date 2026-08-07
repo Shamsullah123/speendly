@@ -1,6 +1,7 @@
 import functools
 import os
 import sqlite3
+from datetime import datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -44,7 +45,7 @@ def current_user():
     conn = get_db()
     try:
         user = conn.execute(
-            "SELECT id, name, email FROM users WHERE id = ?", (user_id,)
+            "SELECT id, name, email, created_at FROM users WHERE id = ?", (user_id,)
         ).fetchone()
     finally:
         conn.close()
@@ -59,6 +60,66 @@ def current_user():
 def inject_current_user():
     """Make current_user available to every template, notably base.html."""
     return {"current_user": current_user()}
+
+
+# ------------------------------------------------------------------ #
+# Template filters                                                    #
+# ------------------------------------------------------------------ #
+
+@app.template_filter("fmt_date")
+def fmt_date(value, fmt="%d %b %Y"):
+    """Format a SQLite date string. Returns it unchanged if it won't parse."""
+    for pattern in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(str(value), pattern).strftime(fmt)
+        except ValueError:
+            continue
+    return value
+
+
+@app.template_filter("rupees")
+def rupees(value):
+    """₹ with thousands separators — the currency lives here, not in markup."""
+    try:
+        return f"₹{float(value):,.0f}"
+    except (TypeError, ValueError):
+        return value
+
+
+# ------------------------------------------------------------------ #
+# Demo data — Step 5 replaces this with real queries                  #
+# ------------------------------------------------------------------ #
+
+# Shaped exactly as the expenses queries will return, so wiring up Step 5 is a
+# drop-in: ISO dates, float amounts, the seven fixed categories from Step 1.
+DEMO_PROFILE_DATA = {
+    "summary": {
+        "total_spent": 8143.52,
+        "transaction_count": 6,
+        "top_category": "Shopping",
+    },
+    "transactions": [
+        {"date": "2026-08-05", "description": "Vegetables from the sabzi mandi",
+         "category": "Food", "amount": 658.31},
+        {"date": "2026-08-03", "description": "Myntra order", "category": "Shopping",
+         "amount": 3120.00},
+        {"date": "2026-07-29", "description": "Electricity bill", "category": "Bills",
+         "amount": 2240.75},
+        {"date": "2026-07-24", "description": "Apollo Pharmacy medicines",
+         "category": "Health", "amount": 845.00},
+        {"date": "2026-07-20", "description": "Metro card recharge",
+         "category": "Transport", "amount": 500.00},
+        {"date": "2026-07-18", "description": "PVR movie tickets",
+         "category": "Entertainment", "amount": 779.46},
+    ],
+    "categories": [
+        {"name": "Shopping", "total": 3120.00, "percent": 100},
+        {"name": "Bills", "total": 2240.75, "percent": 72},
+        {"name": "Health", "total": 845.00, "percent": 27},
+        {"name": "Entertainment", "total": 779.46, "percent": 25},
+        {"name": "Food", "total": 658.31, "percent": 21},
+    ],
+}
 
 
 # ------------------------------------------------------------------ #
@@ -148,6 +209,14 @@ def logout():
     return redirect(url_for("landing"))
 
 
+@app.route("/profile")
+@login_required
+def profile():
+    # The account details come from current_user (injected into every template);
+    # only the expense figures are placeholder data until Step 5.
+    return render_template("profile.html", **DEMO_PROFILE_DATA)
+
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -161,12 +230,6 @@ def privacy():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/profile")
-@login_required
-def profile():
-    return "Profile page — coming in Step 4"
-
 
 @app.route("/expenses/add")
 def add_expense():
