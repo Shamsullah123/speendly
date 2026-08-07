@@ -108,8 +108,10 @@ either means that section needs updating.
 
 ## Known gaps
 
-- **`register.html` and `login.html` POST to `/register` and `/login`, but `app.py` registers
-  those routes GET-only** — submitting either form returns 405 today. That is Step 2's work.
+- **`login.html` POSTs to `/login`, but `app.py` registers that route GET-only** — submitting the
+  sign-in form returns 405 today. That is Step 3's work. `/register` accepts POST as of Step 2:
+  it validates, hashes with werkzeug, inserts a `users` row, and redirects to `/login` — but it
+  does **not** log the user in, because sessions don't exist yet.
 - The privacy policy describes hashed passwords, profile editing, and data export. None exist yet;
   it's a statement of intent.
 - `templates/landing.html` — the "See how it works" modal trigger is `<a href="#">`. The other
