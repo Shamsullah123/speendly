@@ -1,16 +1,64 @@
+import functools
+import os
 import sqlite3
 
-from flask import Flask, redirect, render_template, request, url_for
-from werkzeug.security import generate_password_hash
+from flask import Flask, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from database.db import get_db, init_db, seed_db
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-not-for-production")
 
 # Make sure the schema and demo data exist before any request is served.
 with app.app_context():
     init_db()
     seed_db()
+
+
+# ------------------------------------------------------------------ #
+# Session helpers                                                     #
+# ------------------------------------------------------------------ #
+
+def login_required(view):
+    """Send anonymous visitors to the sign-in page.
+
+    functools.wraps keeps the wrapped function's name, which Flask uses as the
+    endpoint — without it every decorated view would register as "wrapper".
+    """
+    @functools.wraps(view)
+    def wrapped(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect(url_for("login"))
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+def current_user():
+    """The signed-in user's row, or None. Only the id lives in the session."""
+    user_id = session.get("user_id")
+    if user_id is None:
+        return None
+
+    conn = get_db()
+    try:
+        user = conn.execute(
+            "SELECT id, name, email FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if user is None:
+        # The account was deleted out from under the session.
+        session.clear()
+    return user
+
+
+@app.context_processor
+def inject_current_user():
+    """Make current_user available to every template, notably base.html."""
+    return {"current_user": current_user()}
 
 
 # ------------------------------------------------------------------ #
@@ -59,9 +107,45 @@ def register():
     return redirect(url_for("login"))
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if request.method == "GET":
+        return render_template("login.html")
+
+    email = request.form.get("email", "").strip().lower()
+    # Not stripped — spaces are legitimate password characters.
+    password = request.form.get("password", "")
+
+    def show_error(message):
+        return render_template("login.html", error=message, email=email)
+
+    # One message for every failure. Distinguishing "no such account" from
+    # "wrong password" would let anyone test which emails are registered.
+    incorrect = "Incorrect email or password."
+
+    if not email or not password:
+        return show_error(incorrect)
+
+    conn = get_db()
+    try:
+        user = conn.execute(
+            "SELECT id, password_hash FROM users WHERE email = ?", (email,)
+        ).fetchone()
+    finally:
+        conn.close()
+
+    if user is None or not check_password_hash(user["password_hash"], password):
+        return show_error(incorrect)
+
+    session.clear()
+    session["user_id"] = user["id"]
+    return redirect(url_for("profile"))
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("landing"))
 
 
 @app.route("/terms")
@@ -78,12 +162,8 @@ def privacy():
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
 
-@app.route("/logout")
-def logout():
-    return "Logout — coming in Step 3"
-
-
 @app.route("/profile")
+@login_required
 def profile():
     return "Profile page — coming in Step 4"
 
