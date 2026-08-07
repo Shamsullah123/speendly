@@ -96,6 +96,17 @@ Two deliberate exceptions:
 redesign and is a known inconsistency, not an accident. The `700` weight is in the Google Fonts
 URL specifically for the hero.
 
+### Sessions: `current_user` is injected, not passed
+
+Only `user_id` goes into the signed session cookie. A context processor in `app.py`
+(`inject_current_user`) resolves it to the `users` row and injects `current_user` into **every**
+template, so views never pass it explicitly — `base.html`'s navbar reads it directly to swap
+Sign in / Get started for the user's name and Log out. It is `None` when logged out, and clears a
+stale session if the row has since been deleted.
+
+Guard a logged-in route with `@login_required` placed **below** `@app.route` (the route decorator
+must stay outermost). It only checks for the session key; it does not load the user.
+
 ### Legal pages share a class system
 
 `terms.html` and `privacy.html` are structurally identical and both use the `legal-*` classes
@@ -108,10 +119,9 @@ either means that section needs updating.
 
 ## Known gaps
 
-- **`login.html` POSTs to `/login`, but `app.py` registers that route GET-only** — submitting the
-  sign-in form returns 405 today. That is Step 3's work. `/register` accepts POST as of Step 2:
-  it validates, hashes with werkzeug, inserts a `users` row, and redirects to `/login` — but it
-  does **not** log the user in, because sessions don't exist yet.
+- Auth is implemented through Step 3: `/register` creates the account, `/login` starts the session,
+  `/logout` clears it. `/profile` is guarded but still returns its placeholder string — Step 4's
+  work. The expense routes (Steps 7–9) are still placeholders and are **not** guarded yet.
 - The privacy policy describes hashed passwords, profile editing, and data export. None exist yet;
   it's a statement of intent.
 - `templates/landing.html` — the "See how it works" modal trigger is `<a href="#">`. The other
