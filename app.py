@@ -1,4 +1,7 @@
-from flask import Flask, render_template
+import sqlite3
+
+from flask import Flask, redirect, render_template, request, url_for
+from werkzeug.security import generate_password_hash
 
 from database.db import get_db, init_db, seed_db
 
@@ -19,9 +22,41 @@ def landing():
     return render_template("landing.html")
 
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    if request.method == "GET":
+        return render_template("register.html")
+
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    # Not stripped — spaces are legitimate password characters.
+    password = request.form.get("password", "")
+
+    def show_error(message):
+        return render_template("register.html", error=message, name=name, email=email)
+
+    if not name:
+        return show_error("Please enter your name.")
+    if not email:
+        return show_error("Please enter your email address.")
+    if len(password) < 8:
+        return show_error("Password must be at least 8 characters.")
+
+    conn = get_db()
+    try:
+        with conn:
+            conn.execute(
+                "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+                (name, email, generate_password_hash(password)),
+            )
+    except sqlite3.IntegrityError:
+        # The UNIQUE constraint on users.email — not a prior SELECT — is what
+        # actually guarantees no duplicate account.
+        return show_error("That email is already registered.")
+    finally:
+        conn.close()
+
+    return redirect(url_for("login"))
 
 
 @app.route("/login")
