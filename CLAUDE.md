@@ -107,6 +107,23 @@ stale session if the row has since been deleted.
 Guard a logged-in route with `@login_required` placed **below** `@app.route` (the route decorator
 must stay outermost). It only checks for the session key; it does not load the user.
 
+`current_user` selects `id, name, email, created_at` — `created_at` is there so `/profile` can show
+a join date without a second query, since Step 4's view is not allowed to hit the database.
+
+### Profile page: `profile-*` classes, and why hero classes are off-limits
+
+`profile.html` uses its own `profile-*` set plus seven `cat-*` modifiers. **Do not reuse the hero's
+`.stat-card` / `.preview-bars` / `.preview-fill` classes anywhere outside `.hero`** — they resolve
+`--hero-line`, `--hero-red` and `--hero-green`, which are scoped to `.hero`, so borders and accents
+silently vanish elsewhere. They also hardcode hex.
+
+Each `cat-*` class sets a single `--cat` custom property; `.profile-badge` reads it as text colour
+and `.profile-bar-fill` reads it as background. Adding a category means one `--cat-*` token in
+`:root` and one `cat-*` rule — nothing else.
+
+The expense figures on the page come from `DEMO_PROFILE_DATA` in `app.py`, **not** the database.
+It is shaped like the real query results (ISO dates, float amounts) so Step 5 is a drop-in.
+
 ### Legal pages share a class system
 
 `terms.html` and `privacy.html` are structurally identical and both use the `legal-*` classes
@@ -120,8 +137,9 @@ either means that section needs updating.
 ## Known gaps
 
 - Auth is implemented through Step 3: `/register` creates the account, `/login` starts the session,
-  `/logout` clears it. `/profile` is guarded but still returns its placeholder string — Step 4's
-  work. The expense routes (Steps 7–9) are still placeholders and are **not** guarded yet.
+  `/logout` clears it. `/profile` is a real page as of Step 4, but its expense figures are hardcoded
+  — Step 5 replaces `DEMO_PROFILE_DATA` with queries. The expense routes (Steps 7–9) are still
+  placeholders and are **not** guarded yet.
 - The privacy policy describes hashed passwords, profile editing, and data export. None exist yet;
   it's a statement of intent.
 - `templates/landing.html` — the "See how it works" modal trigger is `<a href="#">`. The other
