@@ -27,7 +27,7 @@
                 <span class="profile-stat-label">Transactions</span>
             </div>
             <div class="profile-stat">
-                <span class="profile-stat-value">{{ summary.top_category }}</span>
+                <span class="profile-stat-value">{{ summary.top_category or "—" }}</span>
                 <span class="profile-stat-label">Top category</span>
             </div>
         </div>
@@ -53,6 +53,10 @@
                         </td>
                         <td class="profile-amount">{{ t.amount|rupees }}</td>
                     </tr>
+                    {% else %}
+                    <tr>
+                        <td class="profile-empty" colspan="4">No expenses yet.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -69,6 +73,8 @@
                 </div>
                 <span class="profile-bar-value">{{ c.total|rupees }}</span>
             </div>
+            {% else %}
+            <p class="profile-empty">Nothing to break down yet.</p>
             {% endfor %}
         </div>
 
