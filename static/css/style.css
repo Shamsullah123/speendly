@@ -1042,3 +1042,106 @@ body.modal-open { overflow: hidden; }
     color: var(--ink-muted);
     font-size: 0.925rem;
 }
+
+.profile-empty a { color: var(--accent); font-weight: 500; }
+
+/* ------------------------------------------------------------------ */
+/* Profile filter                                                      */
+/* ------------------------------------------------------------------ */
+
+/* The presets are links, not form controls, so one click applies them and the
+   filtered view stays a shareable URL. Only the custom range needs a form. */
+
+.profile-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.profile-filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.profile-filter-option {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.profile-filter-option:hover { border-color: var(--ink-faint); color: var(--ink-soft); }
+
+.profile-filter-option.is-active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.profile-filter-dates {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+}
+
+/* The date fields borrow .form-input from the auth pages, which is full-width
+   by design there — here they sit inline, so the width is overridden. */
+.profile-filter-dates .form-input {
+    width: auto;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+    background: var(--paper-card);
+}
+
+/* When a custom range is the one applied, none of the preset links are active —
+   so the form has to be what shows as selected. */
+.profile-filter-dates.is-active .form-input {
+    border-color: var(--accent);
+    background: var(--accent-light);
+}
+
+.profile-filter-apply {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.9rem;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.profile-filter-apply:hover { background: var(--accent); }
+
+.profile-range-label {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin: -1.75rem 0 2rem;
+}
+
+.profile-filter-error {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .profile-filter { flex-direction: column; align-items: stretch; }
+    .profile-filter-dates { flex-wrap: wrap; }
+    .profile-filter-dates .form-input { flex: 1 1 auto; }
+}

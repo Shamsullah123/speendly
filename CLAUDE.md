@@ -131,7 +131,36 @@ always fills its track.
 
 An account with no expenses is the normal case until Step 7, not an edge case. `summary.top_category`
 is `None` then, and Jinja renders that as the literal text `None` — hence the `or "—"` guard in
-`profile.html`. Both cards fall back to `.profile-empty` via `{% for %}…{% else %}`.
+`profile.html`. Both cards fall back to `.profile-empty` via `{% for %}…{% else %}`, and each of
+those blocks swaps its copy on `active_range != 'all'` — "No expenses yet." is only true for an
+account with no expenses at all, not one whose *filter* excluded them.
+
+### Profile date filter: one window, three queries (Step 6)
+
+`/profile` takes an optional date range from the query string — `?range=` (`month`, `30d`, `year`,
+`all`, `custom`) plus `?from=`/`?to=` when `range=custom`. No new route: it is still
+`GET /profile`, endpoint `profile`. A bare `/profile` means all time, so the page renders exactly
+as it did before Step 6.
+
+`resolve_range(args)` does the parsing and returns `(start, end, label, active, error)`, with
+`start`/`end` as ISO strings or `None` for an open bound. It takes the args mapping rather than
+reading `request` itself so the date arithmetic can be tested without a request context. Two rules
+matter more than the rest: the preset is checked against the `RANGE_PRESETS` whitelist **before**
+anything branches on it, and nothing in there raises — an unknown preset, an unparseable date or a
+reversed range all fall back to the all-time window and set `error`, because a bad filter is not
+worth a 500.
+
+`profile()` then builds `where`/`params` **once** and passes the same pair to all three queries.
+Splitting them would let the stats describe one window while the bars below describe another. The
+clause is spliced in by concatenating string literals rather than with an f-string: `where` is
+assembled only from literals, and every user value — dates included — reaches SQLite as a `?`.
+`percent` is still a share of the largest category, now the largest *within the window*.
+
+The filter bar is presets-as-links plus a small `method="get"` form for the custom range, so one
+click applies a preset and the filtered view stays a shareable, bookmarkable URL with a working
+back button. There is no JavaScript. Its styles live in the `Profile filter` banner section at the
+end of `style.css`; the date inputs borrow `.form-input` from the auth pages and override its
+full-width default.
 
 ### Legal pages share a class system
 
@@ -145,10 +174,11 @@ either means that section needs updating.
 
 ## Known gaps
 
-- Implemented through Step 5: `/register` creates the account, `/login` starts the session,
-  `/logout` clears it, and `/profile` reads the signed-in user's real expenses. The expense routes
-  (Steps 7–9) are still placeholders and are **not** guarded yet — no `@login_required`, and no
-  ownership check on the `<int:id>` ones, so guarding them is part of those steps' work.
+- Implemented through Step 6: `/register` creates the account, `/login` starts the session,
+  `/logout` clears it, and `/profile` reads the signed-in user's real expenses, optionally narrowed
+  to a date range from the query string. The expense routes (Steps 7–9) are still placeholders and
+  are **not** guarded yet — no `@login_required`, and no ownership check on the `<int:id>` ones, so
+  guarding them is part of those steps' work.
 - Nothing in the UI links to the expense routes, and there is no expense-list page, so the only way
   to get rows into `expenses` today is `seed_db()` or the `/seed-expense` command. That is what
   Step 7 fixes.
