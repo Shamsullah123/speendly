@@ -87,42 +87,6 @@ def rupees(value):
 
 
 # ------------------------------------------------------------------ #
-# Demo data — Step 5 replaces this with real queries                  #
-# ------------------------------------------------------------------ #
-
-# Shaped exactly as the expenses queries will return, so wiring up Step 5 is a
-# drop-in: ISO dates, float amounts, the seven fixed categories from Step 1.
-DEMO_PROFILE_DATA = {
-    "summary": {
-        "total_spent": 8143.52,
-        "transaction_count": 6,
-        "top_category": "Shopping",
-    },
-    "transactions": [
-        {"date": "2026-08-05", "description": "Vegetables from the sabzi mandi",
-         "category": "Food", "amount": 658.31},
-        {"date": "2026-08-03", "description": "Myntra order", "category": "Shopping",
-         "amount": 3120.00},
-        {"date": "2026-07-29", "description": "Electricity bill", "category": "Bills",
-         "amount": 2240.75},
-        {"date": "2026-07-24", "description": "Apollo Pharmacy medicines",
-         "category": "Health", "amount": 845.00},
-        {"date": "2026-07-20", "description": "Metro card recharge",
-         "category": "Transport", "amount": 500.00},
-        {"date": "2026-07-18", "description": "PVR movie tickets",
-         "category": "Entertainment", "amount": 779.46},
-    ],
-    "categories": [
-        {"name": "Shopping", "total": 3120.00, "percent": 100},
-        {"name": "Bills", "total": 2240.75, "percent": 72},
-        {"name": "Health", "total": 845.00, "percent": 27},
-        {"name": "Entertainment", "total": 779.46, "percent": 25},
-        {"name": "Food", "total": 658.31, "percent": 21},
-    ],
-}
-
-
-# ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
 
@@ -212,9 +176,84 @@ def logout():
 @app.route("/profile")
 @login_required
 def profile():
-    # The account details come from current_user (injected into every template);
-    # only the expense figures are placeholder data until Step 5.
-    return render_template("profile.html", **DEMO_PROFILE_DATA)
+    """The signed-in user's own spending, read live from the expenses table.
+
+    Account details still arrive via current_user, which the context processor
+    injects into every template. Everything below is scoped to the session's
+    user_id — an unscoped query here would show one account another's spending.
+    """
+    user_id = session["user_id"]
+
+    conn = get_db()
+    try:
+        # COALESCE because SUM over zero rows is NULL, which would reach the
+        # rupees filter and render as an empty cell rather than ₹0.
+        summary_row = conn.execute(
+            """
+            SELECT COUNT(*) AS transaction_count,
+                   COALESCE(SUM(amount), 0) AS total_spent
+            FROM expenses
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+
+        # date is ISO text, so a plain string sort is already chronological.
+        # id DESC breaks ties, keeping same-day expenses newest-first and in the
+        # same order on every refresh.
+        transactions = conn.execute(
+            """
+            SELECT date, description, category, amount
+            FROM expenses
+            WHERE user_id = ?
+            ORDER BY date DESC, id DESC
+            LIMIT 10
+            """,
+            (user_id,),
+        ).fetchall()
+
+        category_rows = conn.execute(
+            """
+            SELECT category, SUM(amount) AS total
+            FROM expenses
+            WHERE user_id = ?
+            GROUP BY category
+            ORDER BY total DESC
+            """,
+            (user_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    # Bars are sized against the biggest category rather than against total
+    # spend, so the top one always fills its track. The query sorts descending,
+    # so that is the first row. sqlite3.Row is immutable, which is why these
+    # become dicts — percent is added after the fetch.
+    largest = category_rows[0]["total"] if category_rows else 0
+    categories = [
+        {
+            "name": row["category"],
+            "total": row["total"],
+            "percent": round(row["total"] / largest * 100) if largest else 0,
+        }
+        for row in category_rows
+    ]
+
+    summary = {
+        "total_spent": summary_row["total_spent"],
+        "transaction_count": summary_row["transaction_count"],
+        # Free from the category query. Deriving it here rather than with a
+        # fourth query means the stat can never disagree with the bars below it.
+        # None when there is nothing to spend on yet; the template shows an em dash.
+        "top_category": category_rows[0]["category"] if category_rows else None,
+    }
+
+    return render_template(
+        "profile.html",
+        summary=summary,
+        transactions=transactions,
+        categories=categories,
+    )
 
 
 @app.route("/terms")

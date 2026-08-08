@@ -1027,3 +1027,18 @@ body.modal-open { overflow: hidden; }
 
     .profile-bar-row { grid-template-columns: 80px 1fr 72px; gap: 0.75rem; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Empty states                                                        */
+/* ------------------------------------------------------------------ */
+
+/* Shown when an account has no expenses yet — a new user's profile, and the
+   normal state until Step 7 gives them a way to add one. Used both as a table
+   cell and as a plain div, so it carries no border of its own; the table's own
+   td rules handle that. */
+.profile-empty {
+    padding: 2.25rem 0.5rem;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 0.925rem;
+}

@@ -13,11 +13,10 @@ numbered curriculum. Two things encode that curriculum:
 - `app.py` — placeholder routes return literal strings naming their step
   (e.g. `"Add expense — coming in Step 7"`). Steps referenced so far: 3 (logout/sessions),
   4 (profile), 7 (add), 8 (edit), 9 (delete).
-- `database/db.py` — **contains only comments**. It specifies three functions to write:
-  `get_db()` (connection with `row_factory` + foreign keys on), `init_db()`
-  (`CREATE TABLE IF NOT EXISTS`), `seed_db()` (sample data).
+- `database/db.py` — implemented as of Step 1. Provides `get_db()` (connection with `row_factory`
+  + foreign keys on), `init_db()` (`CREATE TABLE IF NOT EXISTS`) and `seed_db()` (sample data).
 
-Do not "fix" the placeholder routes or stub file as if they were bugs.
+Do not "fix" the remaining placeholder routes as if they were bugs.
 
 ## Commands
 
@@ -108,7 +107,9 @@ Guard a logged-in route with `@login_required` placed **below** `@app.route` (th
 must stay outermost). It only checks for the session key; it does not load the user.
 
 `current_user` selects `id, name, email, created_at` — `created_at` is there so `/profile` can show
-a join date without a second query, since Step 4's view is not allowed to hit the database.
+a join date without querying `users` again. `profile()` does hit the database (Step 5), but only
+`expenses`; it reads the id straight from `session["user_id"]` rather than calling `current_user()`,
+which the context processor has already called once for the navbar.
 
 ### Profile page: `profile-*` classes, and why hero classes are off-limits
 
@@ -121,8 +122,16 @@ Each `cat-*` class sets a single `--cat` custom property; `.profile-badge` reads
 and `.profile-bar-fill` reads it as background. Adding a category means one `--cat-*` token in
 `:root` and one `cat-*` rule — nothing else.
 
-The expense figures on the page come from `DEMO_PROFILE_DATA` in `app.py`, **not** the database.
-It is shaped like the real query results (ISO dates, float amounts) so Step 5 is a drop-in.
+The expense figures come from the database as of Step 5. `profile()` runs three queries on one
+connection, every one scoped `WHERE user_id = ?` — an unscoped query there leaks one account's
+spending into another's page. Two derivations happen in Python rather than SQL: `top_category` is
+the first row of the category query (so the stat can never disagree with the bars below it), and
+each `percent` is a share **of the largest category's total**, not of total spend, so the top bar
+always fills its track.
+
+An account with no expenses is the normal case until Step 7, not an edge case. `summary.top_category`
+is `None` then, and Jinja renders that as the literal text `None` — hence the `or "—"` guard in
+`profile.html`. Both cards fall back to `.profile-empty` via `{% for %}…{% else %}`.
 
 ### Legal pages share a class system
 
@@ -136,10 +145,13 @@ either means that section needs updating.
 
 ## Known gaps
 
-- Auth is implemented through Step 3: `/register` creates the account, `/login` starts the session,
-  `/logout` clears it. `/profile` is a real page as of Step 4, but its expense figures are hardcoded
-  — Step 5 replaces `DEMO_PROFILE_DATA` with queries. The expense routes (Steps 7–9) are still
-  placeholders and are **not** guarded yet.
+- Implemented through Step 5: `/register` creates the account, `/login` starts the session,
+  `/logout` clears it, and `/profile` reads the signed-in user's real expenses. The expense routes
+  (Steps 7–9) are still placeholders and are **not** guarded yet — no `@login_required`, and no
+  ownership check on the `<int:id>` ones, so guarding them is part of those steps' work.
+- Nothing in the UI links to the expense routes, and there is no expense-list page, so the only way
+  to get rows into `expenses` today is `seed_db()` or the `/seed-expense` command. That is what
+  Step 7 fixes.
 - The privacy policy describes hashed passwords, profile editing, and data export. None exist yet;
   it's a statement of intent.
 - `templates/landing.html` — the "See how it works" modal trigger is `<a href="#">`. The other
