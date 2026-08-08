@@ -17,6 +17,34 @@
             </p>
         </div>
 
+        {% if range_error %}
+        <p class="profile-filter-error">{{ range_error }}</p>
+        {% endif %}
+
+        <div class="profile-filter">
+            <div class="profile-filter-options">
+                <a href="{{ url_for('profile', range='month') }}"
+                   class="profile-filter-option{% if active_range == 'month' %} is-active{% endif %}">This month</a>
+                <a href="{{ url_for('profile', range='30d') }}"
+                   class="profile-filter-option{% if active_range == '30d' %} is-active{% endif %}">Last 30 days</a>
+                <a href="{{ url_for('profile', range='year') }}"
+                   class="profile-filter-option{% if active_range == 'year' %} is-active{% endif %}">This year</a>
+                {# No query string at all, so clearing the filter leaves a clean URL. #}
+                <a href="{{ url_for('profile') }}"
+                   class="profile-filter-option{% if active_range == 'all' %} is-active{% endif %}">All time</a>
+            </div>
+
+            <form method="get" action="{{ url_for('profile') }}"
+                  class="profile-filter-dates{% if active_range == 'custom' %} is-active{% endif %}">
+                <input type="hidden" name="range" value="custom">
+                <label for="from">From</label>
+                <input type="date" id="from" name="from" value="{{ date_from }}" class="form-input">
+                <label for="to">To</label>
+                <input type="date" id="to" name="to" value="{{ date_to }}" class="form-input">
+                <button type="submit" class="profile-filter-apply">Apply</button>
+            </form>
+        </div>
+
         <div class="profile-stats">
             <div class="profile-stat">
                 <span class="profile-stat-value">{{ summary.total_spent|rupees }}</span>
@@ -31,6 +59,9 @@
                 <span class="profile-stat-label">Top category</span>
             </div>
         </div>
+
+        {# Without this, "Total spent ₹250" doesn't say over what period. #}
+        <p class="profile-range-label">Showing {{ range_label }}</p>
 
         <h2 class="profile-heading">Recent transactions</h2>
         <div class="profile-card">
@@ -55,7 +86,16 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td class="profile-empty" colspan="4">No expenses yet.</td>
+                        <td class="profile-empty" colspan="4">
+                            {# filtered, not active_range — a blank or rejected
+                               custom range leaves the latter set but applies no bound. #}
+                            {% if filtered %}
+                            No expenses in this range.
+                            <a href="{{ url_for('profile') }}">Show all time</a>
+                            {% else %}
+                            No expenses yet.
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -74,7 +114,14 @@
                 <span class="profile-bar-value">{{ c.total|rupees }}</span>
             </div>
             {% else %}
-            <p class="profile-empty">Nothing to break down yet.</p>
+            <p class="profile-empty">
+                {% if filtered %}
+                No spending in this range.
+                <a href="{{ url_for('profile') }}">Show all time</a>
+                {% else %}
+                Nothing to break down yet.
+                {% endif %}
+            </p>
             {% endfor %}
         </div>
 
